@@ -1,4 +1,4 @@
-package apiserver
+package routes
 
 import (
 	"pvz_server/internal/handlers"
@@ -6,6 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRoutes(r *gin.Engine) {
+func registerAuthRoutes(r *gin.Engine) {
 	r.POST("/dummyLogin", handlers.DummyLogin)
 }

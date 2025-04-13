@@ -15,13 +15,13 @@ func DummyLogin(c *gin.Context) {
 	var req dummyLoginRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid request"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid request"})
 		return
 	}
 
 	token, err := utils.GenerateJWT(req.Role)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to generate token"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to generate token"})
 		return
 	}
 
