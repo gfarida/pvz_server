@@ -2,8 +2,6 @@ package model
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type City string
@@ -21,7 +19,7 @@ var AllowedCities = map[City]bool{
 }
 
 type PVZ struct {
-	ID               uuid.UUID `json:"id"`
+	ID               string    `json:"id"`
 	RegistrationDate time.Time `json:"registrationDate"`
 	City             City      `json:"city"`
 }
