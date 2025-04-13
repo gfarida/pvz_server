@@ -56,7 +56,7 @@ func (s *Store) CreateReception(ctx context.Context, pvzID string) (*model.Recep
 	err = tx.QueryRowContext(
 		ctx,
 		`SELECT EXISTS (
-					SELECT 1 FROM receptionct
+					SELECT 1 FROM reception
 					WHERE pvz_id = $1 AND status = $2
 				)`,
 		pvzID,
@@ -87,6 +87,10 @@ func (s *Store) CreateReception(ctx context.Context, pvzID string) (*model.Recep
 	)
 
 	if err != nil {
+		return nil, ErrDatabase
+	}
+
+	if err := tx.Commit(); err != nil {
 		return nil, ErrDatabase
 	}
 

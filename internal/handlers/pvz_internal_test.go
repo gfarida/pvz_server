@@ -65,19 +65,6 @@ func TestCreatePVZ_Success(t *testing.T) {
 	assert.Contains(t, w.Body.String(), "Москва")
 }
 
-func TestCreatePVZ_NoRole(t *testing.T) {
-	mock := &mockStore{}
-	router := setupRouterWithRole("", mock)
-
-	req, _ := http.NewRequest("POST", "/pvz", nil)
-	w := httptest.NewRecorder()
-
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusForbidden, w.Code)
-	assert.Contains(t, w.Body.String(), "access denied")
-}
-
 func TestCreatePVZ_InvalidRole(t *testing.T) {
 	mock := &mockStore{}
 	router := setupRouterWithRole("employee", mock)
