@@ -29,8 +29,6 @@ POST /dummyLogin
 Пример тела запроса:
 
 ```json
-POST /dummyLogin
-
 
 {
   "role": "moderator"
