@@ -18,11 +18,19 @@ import (
 )
 
 type mockProductStore struct {
-	addFunc func(ctx context.Context, pvzID string, productType model.ProductType) (*model.Product, error)
+	addFunc    func(ctx context.Context, pvzID string, productType model.ProductType) (*model.Product, error)
+	deleteFunc func(ctx context.Context, pvzID string) error
 }
 
 func (m *mockProductStore) AddProduct(ctx context.Context, pvzID string, productType model.ProductType) (*model.Product, error) {
 	return m.addFunc(ctx, pvzID, productType)
+}
+
+func (m *mockProductStore) DeleteLastProduct(ctx context.Context, pvzID string) error {
+	if m.deleteFunc != nil {
+		return m.deleteFunc(ctx, pvzID)
+	}
+	return nil
 }
 
 func setupProductRouterWithRole(role string, store *mockProductStore) *gin.Engine {
@@ -37,6 +45,21 @@ func setupProductRouterWithRole(role string, store *mockProductStore) *gin.Engin
 	})
 
 	r.POST("/products", handlers.AddProduct(store))
+	return r
+}
+
+func setupDeleteProductRouterWithRole(role string, store *mockProductStore) *gin.Engine {
+	gin.SetMode(gin.TestMode)
+	r := gin.Default()
+
+	r.Use(func(c *gin.Context) {
+		if role != "" {
+			c.Set("role", role)
+		}
+		c.Next()
+	})
+
+	r.POST("/pvz/:pvzId/delete_last_product", handlers.DeleteLastProduct(store))
 	return r
 }
 
@@ -155,6 +178,82 @@ func TestAddProduct_UnexpectedError(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "unexpected error")
+}
+
+func TestDeleteLastProduct_Success(t *testing.T) {
+	mock := &mockProductStore{
+		deleteFunc: func(ctx context.Context, pvzID string) error {
+			return nil
+		},
+	}
+	router := setupDeleteProductRouterWithRole("employee", mock)
+
+	req, _ := http.NewRequest("POST", "/pvz/pvz1/delete_last_product", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "product deleted")
+}
+
+func TestDeleteLastProduct_InvalidRole(t *testing.T) {
+	mock := &mockProductStore{}
+	router := setupDeleteProductRouterWithRole("moderator", mock)
+
+	req, _ := http.NewRequest("POST", "/pvz/pvz1/delete_last_product", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusForbidden, w.Code)
+	assert.Contains(t, w.Body.String(), "access denied")
+}
+
+func TestDeleteLastProduct_NoActiveReception(t *testing.T) {
+	mock := &mockProductStore{
+		deleteFunc: func(ctx context.Context, pvzID string) error {
+			return store.ErrNoActiveReception
+		},
+	}
+	router := setupDeleteProductRouterWithRole("employee", mock)
+
+	req, _ := http.NewRequest("POST", "/pvz/pvz1/delete_last_product", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "no active reception")
+}
+
+func TestDeleteLastProduct_NoProducts(t *testing.T) {
+	mock := &mockProductStore{
+		deleteFunc: func(ctx context.Context, pvzID string) error {
+			return store.ErrNoProductsToDelete
+		},
+	}
+	router := setupDeleteProductRouterWithRole("employee", mock)
+
+	req, _ := http.NewRequest("POST", "/pvz/pvz1/delete_last_product", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "no products to delete")
+}
+
+func TestDeleteLastProduct_UnexpectedError(t *testing.T) {
+	mock := &mockProductStore{
+		deleteFunc: func(ctx context.Context, pvzID string) error {
+			return errors.New("unexpected")
+		},
+	}
+	router := setupDeleteProductRouterWithRole("employee", mock)
+
+	req, _ := http.NewRequest("POST", "/pvz/pvz1/delete_last_product", nil)
+	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)

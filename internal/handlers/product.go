@@ -46,3 +46,36 @@ func AddProduct(storeInst store.ProductAdder) gin.HandlerFunc {
 		}
 	}
 }
+
+func DeleteLastProduct(storeInst store.ProductDeleter) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, ok := c.Get("role")
+
+		if !ok || role != "employee" {
+			c.JSON(http.StatusForbidden, gin.H{"message": "access denied"})
+			return
+		}
+
+		pvzID := c.Param("pvzId")
+
+		if pvzID == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "invalid pvz ID"})
+			return
+		}
+
+		err := storeInst.DeleteLastProduct(c.Request.Context(), pvzID)
+
+		switch {
+		case errors.Is(err, store.ErrNoActiveReception):
+			c.JSON(http.StatusBadRequest, gin.H{"message": "no active reception"})
+		case errors.Is(err, store.ErrNoProductsToDelete):
+			c.JSON(http.StatusBadRequest, gin.H{"message": "no products to delete"})
+		case errors.Is(err, store.ErrDatabase):
+			c.JSON(http.StatusBadRequest, gin.H{"message": "failed to delete product"})
+		case err != nil:
+			c.JSON(http.StatusBadRequest, gin.H{"message": "unexpected error"})
+		default:
+			c.JSON(http.StatusOK, gin.H{"message": "product deleted"})
+		}
+	}
+}
