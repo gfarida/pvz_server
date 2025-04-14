@@ -13,4 +13,5 @@ func registerPVZRoutes(r *gin.Engine, deps *deps.Dependencies) {
 	protected.Use(middleware.AuthMiddleware())
 
 	protected.POST("/pvz", handlers.CreatePVZ(deps.Store))
+	protected.POST("/pvz/:pvzId/delete_last_product", handlers.DeleteLastProduct(deps.Store))
 }
