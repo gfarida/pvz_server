@@ -14,4 +14,5 @@ func registerPVZRoutes(r *gin.Engine, deps *deps.Dependencies) {
 
 	protected.POST("/pvz", handlers.CreatePVZ(deps.Store))
 	protected.POST("/pvz/:pvzId/delete_last_product", handlers.DeleteLastProduct(deps.Store))
+	protected.GET("/pvz", handlers.GetPVZList(deps.Store))
 }
