@@ -222,3 +222,52 @@ func (s *Store) DeleteLastProduct(ctx context.Context, pvzID string) error {
 
 	return tx.Commit()
 }
+
+func (s *Store) CloseLastReception(ctx context.Context, pvzID string) (*model.Reception, error) {
+	tx, err := s.db.BeginTx(ctx, nil)
+
+	if err != nil {
+		return nil, ErrDatabase
+	}
+
+	defer tx.Rollback()
+
+	var r model.Reception
+
+	err = tx.QueryRowContext(
+		ctx,
+		`SELECT id, date_time, status FROM reception
+		 WHERE pvz_id = $1 AND status = $2
+		 ORDER BY date_time DESC LIMIT 1`,
+		pvzID,
+		model.InProgress,
+	).Scan(
+		&r.ID,
+		&r.DateTime,
+		&r.Status,
+	)
+
+	if err != nil {
+		return nil, ErrNoActiveReception
+	}
+
+	_, err = tx.ExecContext(
+		ctx,
+		`UPDATE reception SET status = $1 
+		WHERE id = $2`,
+		model.Closed,
+		r.ID,
+	)
+
+	if err != nil {
+		return nil, ErrDatabase
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, ErrDatabase
+	}
+
+	r.PvzID = pvzID
+	r.Status = model.Closed
+	return &r, nil
+}

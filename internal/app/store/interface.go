@@ -20,3 +20,7 @@ type ProductAdder interface {
 type ProductDeleter interface {
 	DeleteLastProduct(ctx context.Context, pvzID string) error
 }
+
+type ReceptionCloser interface {
+	CloseLastReception(ctx context.Context, pvzID string) (*model.Reception, error)
+}
