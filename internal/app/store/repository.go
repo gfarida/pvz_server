@@ -22,18 +22,31 @@ func (s *Store) CreatePVZ(ctx context.Context, city model.City) (*model.PVZ, err
 		return nil, ErrCityNotAllowed
 	}
 
+	tx, err := s.db.BeginTx(ctx, nil)
+
+	if err != nil {
+		return nil, ErrDatabase
+	}
+
+	defer tx.Rollback()
+
 	id := uuid.NewString()
 	now := time.Now()
 
-	_, err := s.db.ExecContext(
+	_, err = tx.ExecContext(
 		ctx,
-		`INSERT INTO pvz (id, registration_date, city) VALUES ($1, $2, $3)`,
+		`INSERT INTO pvz (id, registration_date, city) 
+		VALUES ($1, $2, $3)`,
 		id,
 		now,
 		city,
 	)
 
 	if err != nil {
+		return nil, ErrDatabase
+	}
+
+	if err := tx.Commit(); err != nil {
 		return nil, ErrDatabase
 	}
 
