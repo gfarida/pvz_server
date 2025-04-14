@@ -35,7 +35,7 @@ func CreateReception(storeInst store.ReceptionCreator) gin.HandlerFunc {
 		case err == store.ErrDatabase:
 			c.JSON(http.StatusBadRequest, gin.H{"message": "failed to create reception"})
 		case err != nil:
-			c.JSON(http.StatusInternalServerError, gin.H{"message": "unexpected error"})
+			c.JSON(http.StatusBadRequest, gin.H{"message": "unexpected error"})
 		default:
 			c.JSON(http.StatusCreated, reception)
 		}
