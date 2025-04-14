@@ -10,6 +10,12 @@ const (
 	Shoes       ProductType = "обувь"
 )
 
+var AllowedProductTypes = map[ProductType]bool{
+	"электроника": true,
+	"одежда":      true,
+	"обувь":       true,
+}
+
 type Product struct {
 	ID          string      `json:"id"`
 	DateTime    time.Time   `json:"dateTime"`

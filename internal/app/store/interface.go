@@ -12,3 +12,7 @@ type PVZCreator interface {
 type ReceptionCreator interface {
 	CreateReception(ctx context.Context, pvzID string) (*model.Reception, error)
 }
+
+type ProductAdder interface {
+	AddProduct(ctx context.Context, pvzID string, prodType model.ProductType) (*model.Product, error)
+}
