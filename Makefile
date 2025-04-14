@@ -21,7 +21,11 @@ build:
 
 test:
 	@echo "Running tests..."
-	go test ./internal/handlers -v -cover
+	go test ./internal/handlers/ -v -cover
+
+integration_test:
+	@echo "Running integration test..."
+	go test ./internal/handlers/integration_test -v
 
 run:
 	@echo "Running pvz_server..."

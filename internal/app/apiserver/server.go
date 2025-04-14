@@ -49,3 +49,15 @@ func connectDB() (*sql.DB, error) {
 
 	return sql.Open("postgres", dsn)
 }
+
+func (s *Server) GetEngine() *gin.Engine {
+	return s.engine
+}
+
+func NewServerWithDeps(deps *deps.Dependencies) *Server {
+	s := &Server{
+		engine: gin.Default(),
+	}
+	routes.RegisterRoutes(s.engine, deps)
+	return s
+}
