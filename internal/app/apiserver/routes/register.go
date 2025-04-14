@@ -10,4 +10,5 @@ func RegisterRoutes(r *gin.Engine, deps *deps.Dependencies) {
 	registerAuthRoutes(r)
 	registerPVZRoutes(r, deps)
 	registerReceptionRoutes(r, deps)
+	registerProductRoutes(r, deps)
 }
