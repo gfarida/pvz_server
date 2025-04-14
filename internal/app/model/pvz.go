@@ -23,3 +23,13 @@ type PVZ struct {
 	RegistrationDate time.Time `json:"registrationDate"`
 	City             City      `json:"city"`
 }
+
+type PVZWithReceptions struct {
+	PVZ        PVZ                     `json:"pvz"`
+	Receptions []ReceptionWithProducts `json:"receptions"`
+}
+
+type ReceptionWithProducts struct {
+	Reception Reception `json:"reception"`
+	Products  []Product `json:"products"`
+}

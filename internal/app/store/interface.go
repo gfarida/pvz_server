@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"pvz_server/internal/app/model"
+	"time"
 )
 
 type PVZCreator interface {
@@ -23,4 +24,8 @@ type ProductDeleter interface {
 
 type ReceptionCloser interface {
 	CloseLastReception(ctx context.Context, pvzID string) (*model.Reception, error)
+}
+
+type PVZFetcher interface {
+	FetchPVZList(ctx context.Context, startDate, endDate *time.Time, page, limit int) ([]*model.PVZWithReceptions, error)
 }

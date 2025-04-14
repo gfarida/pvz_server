@@ -271,3 +271,42 @@ func (s *Store) CloseLastReception(ctx context.Context, pvzID string) (*model.Re
 	r.Status = model.Closed
 	return &r, nil
 }
+
+func (s *Store) FetchPVZList(ctx context.Context, startDate, endDate *time.Time, page, limit int) ([]*model.PVZWithReceptions, error) {
+	offset := (page - 1) * limit
+
+	query :=
+		`SELECT p.id, p.registration_date, p.city, 
+		       r.id, r.date_time, r.status,
+		       pr.id, pr.date_time, pr.type
+		FROM pvz p
+		LEFT JOIN reception r ON r.pvz_id = p.id
+		LEFT JOIN product pr ON pr.reception_id = r.id
+		WHERE ($1::timestamp IS NULL OR r.date_time >= $1)
+		  AND ($2::timestamp IS NULL OR r.date_time <= $2)
+		ORDER BY p.registration_date
+		OFFSET $3 LIMIT $4`
+
+	rows, err := s.db.QueryContext(
+		ctx,
+		query,
+		startDate,
+		endDate,
+		offset,
+		limit,
+	)
+
+	if err != nil {
+		return nil, ErrDatabase
+	}
+
+	defer rows.Close()
+
+	result, err := aggregatePVZResults(rows)
+
+	if err != nil {
+		return nil, ErrDatabase
+	}
+
+	return result, nil
+}
