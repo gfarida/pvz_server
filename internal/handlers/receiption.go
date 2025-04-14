@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"pvz_server/internal/app/store"
 
@@ -13,9 +14,9 @@ type ReceprionInput struct {
 
 func CreateReception(storeInst store.ReceptionCreator) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		role := c.GetString("role")
+		role, ok := c.Get("role")
 
-		if role != "employee" {
+		if !ok || role != "employee" {
 			c.JSON(http.StatusForbidden, gin.H{"message": "access denied"})
 			return
 		}
@@ -38,6 +39,37 @@ func CreateReception(storeInst store.ReceptionCreator) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"message": "unexpected error"})
 		default:
 			c.JSON(http.StatusCreated, reception)
+		}
+	}
+}
+
+func CloseLastReception(storeInst store.ReceptionCloser) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, ok := c.Get("role")
+
+		if !ok || role != "employee" {
+			c.JSON(http.StatusForbidden, gin.H{"message": "access denied"})
+			return
+		}
+
+		pvzID := c.Param("pvzId")
+
+		if pvzID == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "pvzId is required"})
+			return
+		}
+
+		reception, err := storeInst.CloseLastReception(c.Request.Context(), pvzID)
+
+		switch {
+		case errors.Is(err, store.ErrNoActiveReception):
+			c.JSON(http.StatusBadRequest, gin.H{"message": "no active reception to close"})
+		case errors.Is(err, store.ErrDatabase):
+			c.JSON(http.StatusBadRequest, gin.H{"message": "failed to close reception"})
+		case err != nil:
+			c.JSON(http.StatusBadRequest, gin.H{"message": "unexpected error"})
+		default:
+			c.JSON(http.StatusOK, reception)
 		}
 	}
 }
