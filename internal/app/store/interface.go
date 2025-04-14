@@ -16,3 +16,7 @@ type ReceptionCreator interface {
 type ProductAdder interface {
 	AddProduct(ctx context.Context, pvzID string, prodType model.ProductType) (*model.Product, error)
 }
+
+type ProductDeleter interface {
+	DeleteLastProduct(ctx context.Context, pvzID string) error
+}
