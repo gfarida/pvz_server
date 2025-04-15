@@ -25,11 +25,11 @@ test:
 
 integration_test:
 	@echo "Running integration test..."
-	go test ./internal/handlers/integration_test -v -count=1
+	bash -c "set -a && source .env.local && set +a && go test ./internal/handlers/integration_test -v -count=1"
 
 run:
 	@echo "Running pvz_server..."
-	@ENV_FILE=$(ENV_FILE) go run $(MAIN_FILE)
+	bash -c "set -a && source .env.local && set +a && go run $(MAIN_FILE)"
 
 clean:
 	@echo "Cleaning..."
