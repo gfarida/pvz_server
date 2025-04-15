@@ -38,7 +38,7 @@ func TestFullReceptionFlow(t *testing.T) {
 
 	createReception(t, ts.URL, employeeToken, pvzID)
 
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 50; i++ {
 		var productType string
 		switch {
 		case i < 20:

@@ -25,7 +25,7 @@ test:
 
 integration_test:
 	@echo "Running integration test..."
-	go test ./internal/handlers/integration_test -v
+	go test ./internal/handlers/integration_test -v -count=1
 
 run:
 	@echo "Running pvz_server..."
